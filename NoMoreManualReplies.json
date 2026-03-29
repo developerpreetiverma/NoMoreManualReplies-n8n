@@ -1,0 +1,368 @@
+{
+  "name": "NoMoreManualReplies",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "6bed2b6f-2e2b-42ce-9c8d-e7b5f3b90bb6",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8772cfb9-fb21-4736-aec0-f9b1bf09d56f",
+      "name": "Webhook",
+      "webhookId": "6bed2b6f-2e2b-42ce-9c8d-e7b5f3b90bb6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9ac86419-7ce6-477a-ac21-11828cd71202",
+              "leftValue": "={{ $json.output[0].content[0].text }}",
+              "rightValue": "INVALID",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "27dd955a-e802-4a11-8197-bd91297b671f",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1088,
+        0
+      ],
+      "id": "baf891dd-e362-4dbb-801b-fd39e2e93810",
+      "name": "Need FollowUp"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1VtKhDn1Nn1W3FRNPI8Kw5entSPGZZVPJjS0kaeazowY/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VtKhDn1Nn1W3FRNPI8Kw5entSPGZZVPJjS0kaeazowY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Last Conversation": "={{ $now }}{{ $('Received Reply').item.json.messages[0].timestamp }}",
+            "Whatsapp No": "={{ $('Received Reply').item.json.messages[0].from }}",
+            "Last Message": "={{ $('Received Reply').item.json.messages[0].text.body }}",
+            "Need FollowUp": "Yes"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Whatsapp No",
+              "displayName": "Whatsapp No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Message",
+              "displayName": "Last Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Need FollowUp",
+              "displayName": "Need FollowUp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Conversation",
+              "displayName": "Last Conversation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        -96
+      ],
+      "id": "b5841ad0-9fc0-4b8a-a8b6-db9d6fe9048b",
+      "name": "Follow Up Records",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ISM2DAvZIhwu482w",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "https://drive.google.com/file/d/19a-SptrS-R_kn_4FP4K1zk37bipy5Cvk/view?usp=drive_link",
+          "mode": "url"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "user",
+            "emailAddress": "={{ $('Check Student shared email').item.json.output[0].content[0].text.split(\"Email: \")[1].trim() }}"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1344,
+        64
+      ],
+      "id": "e2692fda-c6a6-490b-94f2-cc0d26e82012",
+      "name": "Share Welcome Video",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "a39rtsFwlvdbveg5",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "GPT-4"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an email extractor. Look at the user's message and check if it contains an email address. If you find an email address anywhere in the message, respond EXACTLY with: VALID | Email: [paste the exact email you found]. If there is no email address in the message, respond EXACTLY with: INVALID | No email found. Please share your name and email address so we can send you the training material. RULES: Never invent or guess an email. Only extract what is actually written in the message."
+            },
+            {
+              "content": "={{ $json.messages[0].text.body }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "37b0df12-0807-4d43-b4fc-54d42616ddde",
+      "name": "Check Student shared email",
+      "credentials": {
+        "openAiApi": {
+          "id": "VM0xAqqlv1AmQLDN",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        608,
+        0
+      ],
+      "id": "faaea5cd-4c73-42f0-8435-85036eeee447",
+      "name": "Received Reply",
+      "webhookId": "7a12adb8-2ed0-4c1e-8c3f-8f25853ab7d1",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "cq7uUjAZuKGuiZPi",
+          "name": "WhatsApp OAuth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {
+          "messageStatusUpdates": [
+            "all"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        192,
+        0
+      ],
+      "id": "f4762790-4bef-47f1-855d-358bb5fce254",
+      "name": "Wait for Student's message",
+      "webhookId": "da5430cd-1379-4a54-a9f8-dc857feeca58",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "cq7uUjAZuKGuiZPi",
+          "name": "WhatsApp OAuth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $json.messages[0].from }}",
+        "textBody": "Hi! Thanks for reaching out. Could you please share the following details? so I can send you the training introduction?  \nYour name\nYour email\nYour experience (in years)\nYour occupation\n\n What you'd like to learn",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        0
+      ],
+      "id": "49c535ed-ba21-493a-b2c1-ee6a8d9389fc",
+      "name": "Send Automated Message",
+      "webhookId": "1425e9d0-5a97-4cc3-b706-b2508d2cb076",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "04WEwNbZKdY684bL",
+          "name": "WhatsApp account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Need FollowUp": {
+      "main": [
+        [
+          {
+            "node": "Follow Up Records",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Share Welcome Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share Welcome Video": {
+      "main": [
+        []
+      ]
+    },
+    "Check Student shared email": {
+      "main": [
+        [
+          {
+            "node": "Need FollowUp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Received Reply": {
+      "main": [
+        [
+          {
+            "node": "Check Student shared email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Student's message": {
+      "main": [
+        [
+          {
+            "node": "Send Automated Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Automated Message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0415bd68-86c5-495a-b841-bba1ec88cdbc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "27554fe12ab2b38773752367cb9eb9c1eb5bccda4af00afc347870420de661fa"
+  },
+  "id": "d39WuFlVEPPP3GtJ",
+  "tags": []
+}
